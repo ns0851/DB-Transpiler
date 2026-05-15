@@ -33,6 +33,7 @@ void insert_to_symbol_table(int initial, int length, char *str, TokenType type) 
     Node *newNode = malloc(sizeof(Node));
     newNode->data.word = strdup(word);
     newNode->data.type = type;
+    newNode->next = NULL;
     if(head == NULL) {
         head = newNode;
         tail = newNode;

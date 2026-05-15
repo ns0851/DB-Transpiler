@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <strings.h>
 
 #include "parser.h"
 #include "../lexer/helpers/symbolTable.h"
@@ -15,6 +16,33 @@ char* convert_to_lower(char *str) {
         str[i] = tolower(str[i]);
     }
     return str;
+}
+
+TreeNode* createNode(char *value) {
+    TreeNode *node = malloc(sizeof(TreeNode));
+
+    node->value = strdup(value);
+    node->left = NULL;
+    node->right = NULL;
+
+    return node;
+}
+
+void print_tree(TreeNode *node, int level, char *prefix) {
+
+    if(node == NULL) return;
+
+    for(int i = 0; i < level; i++) {
+        printf("    ");
+    }
+
+    printf("%s%s\n", prefix, node->value);
+
+    if(node->left != NULL || node->right != NULL) {
+
+        print_tree(node->left, level + 1, "|-- ");
+        print_tree(node->right, level + 1, "`-- ");
+    }
 }
 
 void advance() {
@@ -74,48 +102,72 @@ void parse_source() {
 }
 
 TreeNode* parse_subquery() {
-    TreeNode *leftnode;
-    TreeNode *node;
-    TreeNode *rightnode;
 
-    if(current->data.type == TOKEN_IDENTIFIER) {
-        leftnode = malloc(sizeof(TreeNode));
-        leftnode->value = strdup(current->data.word);
+    TreeNode *leftnode = NULL;
+    TreeNode *node = NULL;
+    TreeNode *rightnode = NULL;
+
+    if(current != NULL && current->data.type == TOKEN_IDENTIFIER) {
+
+        leftnode = createNode(current->data.word);
         advance();
     }
+    else {
+        printf("Expected identifier\n");
+        exit(1);
+    }
 
-    if(current->data.type == TOKEN_OPERATOR) {
-        node = malloc(sizeof(TreeNode));
-        node->value = strdup(current->data.word);
+    if(current != NULL && current->data.type == TOKEN_OPERATOR) {
+
+        node = createNode(current->data.word);
         node->left = leftnode;
+
         advance();
+    }
+    else {
+        printf("Expected operator\n");
+        exit(1);
     }
 
-    if(current->data.type == TOKEN_NUMBER || current->data.type == TOKEN_IDENTIFIER) {
-        rightnode = malloc(sizeof(TreeNode));
-        rightnode->value = strdup(current->data.word);
+    if(current != NULL &&
+       (current->data.type == TOKEN_NUMBER ||
+        current->data.type == TOKEN_IDENTIFIER)) {
+
+        rightnode = createNode(current->data.word);
+
         node->right = rightnode;
+
         advance();
     }
+    else {
+        printf("Expected value\n");
+        exit(1);
+    }
+
     return node;
 }
 
 TreeNode* parse_condition() {
-    struct TreeNode *node = parse_subquery();
-    struct TreeNode *astRoot = malloc(sizeof(TreeNode));
-    if(root == NULL) {
-        root = astRoot; 
-    }
-    if(current->data.type == TOKEN_KEYWORD && (strcmp(current->data.word, "and") == 0 || strcmp(current->data.word, "AND") == 0)) {
+    printf("DEBUG: entered parse_condition\n");
+    TreeNode *node = parse_subquery();
+    printf("DEBUG: subquery returned, node = %s\n", node == NULL ? "NULL" : node->value);
+
+    if(current != NULL && current->data.type == TOKEN_KEYWORD && strcasecmp(current->data.word, "and") == 0) {
+        TreeNode *astNode = malloc(sizeof(TreeNode));
+        astNode->value = strdup("and");
+        astNode->left = NULL;
+        astNode->right = NULL;
+        printf("AST Root is: %s\n", astNode == NULL ? "NULL" : astNode->value);
         advance();
-        astRoot->left = node;
-        astRoot->right = parse_condition();
-        return astRoot;
-    } else {
-        astRoot->left = node;
-        astRoot->right = NULL;
-        return node;
+        astNode->left = node;
+        printf("DEBUG: BEFOREreturning astNode\n");
+        astNode->right = parse_condition();
+        printf("DEBUG: returning astNode\n");
+        return astNode;
     }
+
+    printf("DEBUG: returning normal node %s\n", node->value);
+    return node;
 }
 
 void parse_query() {
@@ -123,12 +175,11 @@ void parse_query() {
     parse_projection();
     expect(TOKEN_KEYWORD, "from");
     parse_source();
-    if(current != NULL && current->data.type == TOKEN_KEYWORD && strcmp(current->data.word, "when") == 0) {
+    if(current != NULL && current->data.type == TOKEN_KEYWORD && strcasecmp(current->data.word, "when") == 0) {
         advance();
-        parse_condition();
+        root = parse_condition();
+        printf("DEBUG: condition done, root = %s\n", root == NULL ? "NULL" : root->value);
     }
-    parse_condition();
-    
 }
 
 void start() {
@@ -138,6 +189,8 @@ void start() {
         return;
     }
     parse_query();
+    printf("DEBUG: about to print tree, root = %s\n", root == NULL ? "NULL" : root->value);
+    print_tree(root, 0, "");
 
     printf("Query parsed successfully!\n");
 }
