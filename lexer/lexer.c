@@ -24,7 +24,7 @@ void categorize(int initial, int final, char *str, TokenType type) {
     char *temp = malloc(final + 1);
 
     for(int k = 0; k < final; k++) {
-    temp[k] = tolower(str[initial + k]);
+        temp[k] = tolower(str[initial + k]);
     }
 
     temp[final] = '\0';
@@ -37,24 +37,29 @@ void categorize(int initial, int final, char *str, TokenType type) {
             }
         }
     }
+
+    if(type == TOKEN_STRING) {
+        ++initial;
+        --length;
+    }
     
-    insertToSymbolTable(initial, length, str, type);
+    insert_to_symbol_table(initial, length, str, type);
 }
 
 
-Result getNext(int i, char *str, int len) {
+Result get_next(int i, char *str, int len) {
     Result r;
     bool closingFound = false;
 
     bool isDouble=false;
-    TokenType type = getFirstCategory(i, str);
+    TokenType type = get_first_category(i, str);
     char *errorMessage = "";
     int count = 0;
     if(type!=TOKEN_STRING) {
 
         for(int j = i; str[j] != '\0'; j++) {
             if(type == TOKEN_NUMBER) {
-                if(!isSpace(str[j]) && isWord(str[j])) {
+                if(!is_space(str[j]) && is_word(str[j])) {
                     errorMessage = "Invalid number";
                     r.count = count;
                     r.line = j;
@@ -64,9 +69,8 @@ Result getNext(int i, char *str, int len) {
                 }
             }
 
-
             if(type == TOKEN_OPERATOR) {
-                if(j+2 < len && (isSpace(str[j+1]) && isOperator(str[j+2]))) {
+                if(j+2 < len && (is_space(str[j+1]) && is_operator(str[j+2]))) {
                     errorMessage = "Invalid operator";
                     r.count = count;
                     r.line = j;
@@ -74,12 +78,12 @@ Result getNext(int i, char *str, int len) {
                     r.token = str[j];
                     return r;
                 }
-                if(isOperator(str[j+1])) {
+                if(is_operator(str[j+1])) {
                     isDouble=true;
                 }
             }
 
-            if(type != getFirstCategory(j, str)) {
+            if(type != get_first_category(j, str)) {
                 break;
             }
             if(isDouble) {
@@ -90,7 +94,7 @@ Result getNext(int i, char *str, int len) {
         }
     } else {
 
-        if(isString(str[i+1])) {
+        if(is_string(str[i+1])) {
             errorMessage = "Invalid string";
             r.count = count;
             r.line = i;
@@ -102,7 +106,7 @@ Result getNext(int i, char *str, int len) {
         count++; 
         for(int k = i + 1; k < len; k++) {
             count++;
-            if(isString(str[k])) {
+            if(is_string(str[k])) {
                 closingFound = true;
                 r.line = k+1;
                 break;
@@ -118,7 +122,6 @@ Result getNext(int i, char *str, int len) {
         return r;
     }
 
-
     categorize(i, count, str, type);
     r.count = count;
     r.line = i;
@@ -127,21 +130,21 @@ Result getNext(int i, char *str, int len) {
     return r;
 }
 
-void createLexems() {
+void create_lexems() {
     int nextindex = 0;
     char *str = (char*) malloc(sizeof(char) * 100);
-    strcpy(str, "GET name, age FROM users WHEN name IS \'John AND age >= 18");
+    strcpy(str, "GET name, age FROM users WHEN age>25 AND age<28");
 
     int len = strlen(str);
 
     for (int i = 0; i < len; i++) {
-        if(isSpace(str[i])){
+        if(is_space(str[i])) {
             continue;
         } 
-        Result r = getNext(i, str, len);
+        Result r = get_next(i, str, len);
 
         if(r.error[0] != '\0') {
-            if(getFirstCategory(i, str) == TOKEN_STRING) {
+            if(get_first_category(i, str) == TOKEN_STRING) {
                 printf("Error: %s at line %d\nNot Found: %c\n", r.error, r.line, r.token);
             } else {
                 printf("Error: %s at line %d\nFound: %c", r.error, r.line, r.token);

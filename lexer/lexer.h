@@ -3,7 +3,7 @@
 
 #include "structs/structures.h"
 
-Result getNext(int i, char *str, int len);
-void createLexems();
+Result get_next(int i, char *str, int len);
+void create_lexems();
 
 #endif

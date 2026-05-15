@@ -1,16 +1,12 @@
 #include "lexer/lexer.h"
-#include "lexer/helpers/symbolTable.h"
+#include "parser/parser.h"
 #include <stdio.h>
 
 int main() {
-    createLexems();
+    create_lexems();
+    start();
+    printf("Query parsed successfully!\n");
 
-    for(int i = 0; i < symbolCount; i++) {
-        printf("%s -> %s\n",
-            st[i].word,
-            tokenNames[st[i].type]
-        );
-    }
 
     return 0;
 }

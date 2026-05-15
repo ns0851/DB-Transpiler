@@ -4,8 +4,9 @@
 
 #include "symbolTable.h"
 
-symbolTable st[100];
-int symbolCount = 0;
+Node *head = NULL;
+Node *tail = NULL;
+Node *current = NULL;
 
 char *tokenNames[] = {
     "KEYWORD",
@@ -18,7 +19,7 @@ char *tokenNames[] = {
     "UNKNOWN"
 };
 
-void insertToSymbolTable(int initial, int length, char *str, TokenType type) {
+void insert_to_symbol_table(int initial, int length, char *str, TokenType type) {
     char *word = malloc(length + 1);
 
     int k = 0;
@@ -29,10 +30,17 @@ void insertToSymbolTable(int initial, int length, char *str, TokenType type) {
 
     word[k] = '\0';
 
-    st[symbolCount].word = strdup(word);
-    st[symbolCount].type = type;
+    Node *newNode = malloc(sizeof(Node));
+    newNode->data.word = strdup(word);
+    newNode->data.type = type;
+    if(head == NULL) {
+        head = newNode;
+        tail = newNode;
+    } else {
+        tail->next = newNode;
+        tail = newNode;
+    }
 
-    symbolCount++;
 
     free(word);
 }

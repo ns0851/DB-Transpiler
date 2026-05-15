@@ -5,13 +5,13 @@
 
 #include <stdbool.h>
 
-bool isNum(char a);
-bool isOperator(char a);
-bool isString(char a);
-bool isWord(char a);
-bool isSpace(char a);
-bool isString(char a);
-bool isComma(char a);
-TokenType getFirstCategory(int i, char *str);
+bool is_num(char a);
+bool is_operator(char a);
+bool is_string(char a);
+bool is_word(char a);
+bool is_space(char a);
+bool is_string(char a);
+bool is_comma(char a);
+TokenType get_first_category(int i, char *str);
 
 #endif

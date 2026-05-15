@@ -8,7 +8,6 @@ typedef struct {
     char token;
 } Result;
 
-
 typedef enum {
     TOKEN_KEYWORD,
     TOKEN_IDENTIFIER,
@@ -25,5 +24,11 @@ typedef struct {
     char *word;
     TokenType type;
 } symbolTable;
+
+
+typedef struct Node {
+    symbolTable data;
+    struct Node *next;
+} Node;
 
 #endif

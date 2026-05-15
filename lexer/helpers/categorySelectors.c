@@ -1,41 +1,41 @@
 #include "categorySelectors.h"
 #include "../structs/structures.h"
 
-bool isNum(char a) {
+bool is_num(char a) {
     return a >= '0' && a <= '9';
 }
 
-bool isOperator(char a) {
+bool is_operator(char a) {
     return a == '+' || a == '>' || a == '<' ||
            a == '=' || a == '!' || a == '|' || a == '&';
 }
 
-bool isString(char a) {
+bool is_string(char a) {
     return a == '"' || a == '\'';
 }
 
-bool isWord(char a) {
+bool is_word(char a) {
     return (a >= 'a' && a <= 'z') ||
            (a >= 'A' && a <= 'Z') ||
            a == '_';
 }
 
-bool isSpace(char a) {
+bool is_space(char a) {
     return (a == ' ') || (a == '\t') || (a == '\n');
 }
 
-bool isComma(char a) {
+bool is_comma(char a) {
     return a == ',';
 }
 
-TokenType getFirstCategory(int i, char *str) {
-    if(isNum(str[i])) return TOKEN_NUMBER;
-    if(isOperator(str[i])) return TOKEN_OPERATOR;
-    if(isString(str[i])) return TOKEN_STRING;
-    if(isWord(str[i])) return TOKEN_IDENTIFIER;
-    if(isString(str[i])) return TOKEN_STRING;
-    if(isComma(str[i])) return TOKEN_COMMA;
-    if(isSpace(str[i])) return TOKEN_SPACE;
+TokenType get_first_category(int i, char *str) {
+    if(is_num(str[i])) return TOKEN_NUMBER;
+    if(is_operator(str[i])) return TOKEN_OPERATOR;
+    if(is_string(str[i])) return TOKEN_STRING;
+    if(is_word(str[i])) return TOKEN_IDENTIFIER;
+    if(is_string(str[i])) return TOKEN_STRING;
+    if(is_comma(str[i])) return TOKEN_COMMA;
+    if(is_space(str[i])) return TOKEN_SPACE;
 
     return TOKEN_UNKNOWN;
 }

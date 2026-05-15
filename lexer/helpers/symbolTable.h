@@ -3,14 +3,14 @@
 
 #include "../structs/structures.h"
 
-extern symbolTable st[100];
-extern int symbolCount;
+extern Node *head;
+extern Node *tail;
+extern Node *current;
 
 extern char *tokenNames[];
 
 
-
-void insertToSymbolTable(
+void insert_to_symbol_table(
     int initial,
     int length,
     char *str,
