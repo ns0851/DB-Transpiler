@@ -35,21 +35,9 @@ TreeNode* createNode(char *value) {
     return node;
 }
 
-void print_tree(TreeNode *node, int level, char *prefix) {
-    if(node == NULL) return;
-    for(int i = 0; i < level; i++) {
-        printf("    ");
-    }
-    printf("%s%s\n", prefix, node->value);
-    if(node->left != NULL || node->right != NULL) {
-        print_tree(node->left, level + 1, "|-- ");
-        print_tree(node->right, level + 1, "`-- ");
-    }
-}
-
 void advance() {
     if(current != NULL) {
-        printf("Consumed: %s\n", current->data.word);
+        // printf("Consumed: %s\n", current->data.word);
         current = current->next;
     }
 }
@@ -166,25 +154,25 @@ TreeNode* parse_subquery() {
 }
 
 TreeNode* parse_condition() {
-    printf("DEBUG: entered parse_condition\n");
+    // printf("DEBUG: entered parse_condition\n");
     TreeNode *node = parse_subquery();
-    printf("DEBUG: subquery returned, node = %s\n", node == NULL ? "NULL" : node->value);
+    // printf("DEBUG: subquery returned, node = %s\n", node == NULL ? "NULL" : node->value);
 
     if(current != NULL && current->data.type == TOKEN_KEYWORD && strcasecmp(current->data.word, "and") == 0) {
         TreeNode *astNode = malloc(sizeof(TreeNode));
         astNode->value = strdup("and");
         astNode->left = NULL;
         astNode->right = NULL;
-        printf("AST Root is: %s\n", astNode == NULL ? "NULL" : astNode->value); 
+        // printf("AST Root is: %s\n", astNode == NULL ? "NULL" : astNode->value); 
         advance();
         astNode->left = node;
-        printf("DEBUG: BEFORE returning astNode\n");
+        // printf("DEBUG: BEFORE returning astNode\n");
         astNode->right = parse_condition();
-        printf("DEBUG: returning astNode\n");
+        // printf("DEBUG: returning astNode\n");
         return astNode;
     }
 
-    printf("DEBUG: returning normal node %s\n", node->value);
+    // printf("DEBUG: returning normal node %s\n", node->value);
     return node;
 }
 
@@ -198,7 +186,7 @@ void parse_query() {
         add_projection(current->data.word);
         advance();
         root = parse_condition();
-        printf("DEBUG: condition done, root = %s\n", root == NULL ? "NULL" : root->value);
+        // printf("DEBUG: condition done, root = %s\n", root == NULL ? "NULL" : root->value);
     }
 }
 

@@ -106,20 +106,17 @@ void generate_sql() {
 }
 
 void generate_mongo() {
-
+    printf("Generating MongoDB\n");
     printf("db.%s.find(", query.table_name);
 
     if(query.condition != NULL) {
         printf("{ ");
         print_mongo(query.condition);
         printf(" }");
-    }
-
-    else {
+    } else {
         printf("{}");
     }
 
-    // PROJECTION OBJECT
     bool has_projection = false;
 
     for(int i = 0; i < query.projection_count; i++) {
@@ -148,6 +145,14 @@ void generate_mongo() {
     printf(")");
 }
 
-void generator() {
-    generate_mongo();
+void generator(char *type) {
+    if(strcmp(type, "sql") == 0) {
+        generate_sql();
+    } else if(strcmp(type, "mongo") == 0) {
+        generate_mongo();
+    } else if(strcmp(type, "both") == 0) {
+        generate_sql();
+        printf("\n");
+        generate_mongo();
+    }
 }

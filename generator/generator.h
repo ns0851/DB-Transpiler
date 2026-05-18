@@ -10,6 +10,6 @@ typedef struct {
 
 void generate_sql();
 void generate_mongo();
-void generator();
+void generator(char *type);
 
 #endif

@@ -130,10 +130,10 @@ Result get_next(int i, char *str, int len) {
     return r;
 }
 
-void create_lexems() {
+void create_lexems(char *strr) {
     int nextindex = 0;
     char *str = (char*) malloc(sizeof(char) * 100);
-    strcpy(str, "GET name, age FROM users WHEN age>25 AND age<28 AND age=30");
+    strcpy(str, strr);
 
     int len = strlen(str);
 
