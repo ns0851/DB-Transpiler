@@ -133,7 +133,7 @@ Result get_next(int i, char *str, int len) {
 void create_lexems() {
     int nextindex = 0;
     char *str = (char*) malloc(sizeof(char) * 100);
-    strcpy(str, "GET name, age FROM users WHEN age>25 AND age<28");
+    strcpy(str, "GET name, age FROM users WHEN age>25 AND age<28 AND age=30");
 
     int len = strlen(str);
 

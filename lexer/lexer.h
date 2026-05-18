@@ -5,5 +5,6 @@
 
 Result get_next(int i, char *str, int len);
 void create_lexems();
+extern char *keywords[7];
 
 #endif
