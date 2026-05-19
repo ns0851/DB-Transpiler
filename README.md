@@ -1,26 +1,61 @@
 # dbgen — A Custom Query Language Transpiler
 
-A command-line tool written in **C** that transpiles a human-readable custom query language into syntactically correct **PostgreSQL**, **SQL**, **MongoDB**. 
-Built from scratch with no external libraries — just C, pointers, and little bit of pain.
+A command-line tool written in **C** that transpiles a human-readable custom query language into **SQL** and **MongoDB** queries.  
+Built from scratch — no external libraries. Just C, pointers, and a bit of pain.
 
 ---
 
 ## What It Does
 
-Instead of writing raw SQL, you write queries in a simpler, readable syntax:
+Instead of writing raw SQL or MongoDB, you write queries in a simpler, readable syntax:
 
 ```
-FETCH name, age from users when age is greater than 18 and status is "active"
+get name, age from users when age>18
 ```
 
-sqlgen transpiles this into:
+And dbgen transpiles it into:
 
+**SQL:**
 ```sql
-SELECT name, age FROM users WHERE age > 18 AND status = 'active';
+SELECT name, age FROM users WHERE age > 18
+```
+
+**MongoDB:**
+```js
+db.users.find({ age: { $gt: 18 } }, { name: 1, age: 1 })
+```
+
+Same input. Two targets. One pipeline.
+
+---
+
+## Demo
+
+```
+C:\Users\Admin> transpiler listen
+
+>> get name from user when age>20 -both
+Query parsed successfully!
+Generating SQL
+SELECT name FROM user WHERE age > 20
+
+Generating MongoDB
+db.user.find({ age: { $gt: 20 } }, { name: 1 })
+
+>> get name from user when age>20 and age<30 -sql
+Query parsed successfully!
+Generating SQL
+SELECT name FROM user WHERE age > 20 and age < 30
+
+>> get name from user when age>20 and age<30 -mongo
+Query parsed successfully!
+Generating MongoDB
+db.user.find({ $and: [ { age: { $gt: 20 } }, { age: { $lt: 30 } } ] }, { name: 1 })
+
+>> exit
 ```
 
 ---
-This might seem pretty similar to actual SQL queries but where it gets interesting is converting the same exact request into a working MongoDB line.
 
 ## Architecture
 
@@ -41,135 +76,111 @@ Input String
      │
      ▼
 ┌─────────────┐
-│  GENERATOR  │  AST → SQL string
+│  GENERATOR  │  AST → SQL / MongoDB
 └─────────────┘
-     │
-     ▼
-PostgreSQL Output
 ```
 
 ### Phase 1 — Lexer
-- Hand-rolled FSM (no `strtok`)
-- Case-insensitive keyword recognition (`FETCH` == `fetch`)
-- Look-ahead (peek) for multi-char operators (`<=`, `>=`, `!=`)
-- Precise error reporting with line and column numbers
+- Hand-rolled, no `strtok`
+- Case-insensitive keyword recognition (`GET` == `get`)
+- Look-ahead for multi-char operators (`<=`, `>=`, `!=`)
 - Handles string literals, numeric constants, identifiers
+- Error reporting for invalid tokens
 
 ### Phase 2 — Parser
 - Recursive descent parser
-- Builds an Abstract Syntax Tree (AST)
-- Correct operator precedence (`AND` binds tighter than `OR`)
-- Graceful error reporting:
-  ```
-  Syntax Error: Expected 'FROM' at line 1, col 12, found 'TABLE'
-  ```
+- Builds a binary AST where condition nodes are operators and leaves are values
+- `AND` chains handled via recursion — naturally produces correct tree structure
 
 ### Phase 3 — Generator
-- Post-order AST traversal
-- Dynamic string buffer with `realloc`
-- SQL injection protection — escapes single quotes in user strings
+- Walks the AST and emits the target query string
+- SQL: standard `SELECT ... FROM ... WHERE` syntax
+- MongoDB: idiomatic `$and`, `$gt`, `$lt`, `$gte`, `$lte` operators with projection
 
 ---
 
-## Grammar (EBNF)
+## Query Syntax
 
-```ebnf
-query       ::= "FETCH" projection "FROM" source [ "WHERE" condition ]
-projection  ::= "*" | column { "," column }
-column      ::= IDENTIFIER
-source      ::= IDENTIFIER
-condition   ::= and_expr { "OR" and_expr }
-and_expr    ::= comparison { "AND" comparison }
-comparison  ::= IDENTIFIER operator value
-operator    ::= "=" | "!=" | "<" | ">" | "<=" | ">=" | "IS"
-value       ::= NUMBER | STRING | IDENTIFIER
 ```
+get <fields> from <table> when <condition>
+```
+
+| Clause | Example |
+|--------|---------|
+| Select all | `get everything from users` |
+| Select fields | `get name, age from users` |
+| Single condition | `get name from users when age>18` |
+| Multiple conditions | `get name from users when age>18 and age<60` |
+
+**Supported operators:** `>`, `<`, `>=`, `<=`, `=`, `!=`
+
+**Flags:**
+- `-sql` → generate SQL only
+- `-mongo` → generate MongoDB only
+- `-both` → generate both (default if no flag)
 
 ---
 
-## Examples
-
-**Simple fetch:**
-```
-FETCH * FROM products
-```
-```sql
-SELECT * FROM products;
-```
-
-**With condition:**
-```
-FETCH name, price FROM products WHERE price < 100
-```
-```sql
-SELECT name, price FROM products WHERE price < 100;
-```
-
-**Compound condition:**
-```
-FETCH name, age FROM users WHERE age > 18 AND age < 60
-```
-```sql
-SELECT name, age FROM users WHERE age > 18 AND age < 60;
-```
-
-**OR precedence:**
-```
-FETCH name FROM users WHERE age < 18 OR age > 60 AND status IS "active"
-```
-```sql
-SELECT name FROM users WHERE age < 18 OR (age > 60 AND status = 'active');
-```
-
-
-## Testing
+## How to Build
 
 ```bash
-make test
+make
 ```
 
-`test_suite.c` covers 50+ cases:
+```bash
+# REPL mode
+./transpiler listen
 
-- Valid queries (simple, compound, edge cases)
-- Invalid syntax (missing FROM, unknown tokens, malformed conditions)
-- Operator precedence (AND vs OR)
-- String escaping (SQL injection prevention)
-- Edge cases (empty input, extra whitespace, case insensitivity)
+# or on Windows
+transpiler listen
+```
 
 ---
 
-## Memory Safety
+## Project Structure
 
-Zero memory leaks. Verified with Valgrind:
-
-```bash
-valgrind --leak-check=full ./sqlgen -i query.txt
 ```
-
-Every AST node is cleaned up via `AST_free()` — recursive teardown of the entire tree after code generation.
+dbgen/
+├── main.c
+├── lexer/
+│   ├── lexer.c / lexer.h
+│   ├── helpers/
+│   │   ├── categorySelectors.c/h
+│   │   └── symbolTable.c/h
+│   └── structs/
+│       └── structures.h
+├── parser/
+│   ├── parser.c / parser.h
+│   └── structure/
+│       └── treeStructures.h
+└── generator/
+    └── generator.c / generator.h
+```
 
 ---
 
 ## Roadmap
 
-- [x] Lexer with FSM
+- [x] Lexer with look-ahead
 - [x] Symbol table
-- [ ] Recursive descent parser
-- [ ] AST construction
-- [ ] PostgreSQL code generator
-- [ ] CLI with getopt
-- [ ] 50+ test suite
-- [ ] Valgrind clean
-- [ ] MySQL dialect support
-- [ ] MongoDB query generation
+- [x] Recursive descent parser
+- [x] Binary AST construction
+- [x] SQL code generator
+- [x] MongoDB code generator
+- [x] REPL mode (`transpiler listen`)
+- [x] `-sql`, `-mongo`, `-both` flags
+- [ ] `OR` condition support
+- [ ] `JOIN` support
+- [ ] `GROUP BY` / `ORDER BY` / `LIMIT`
+- [ ] MySQL / PostgreSQL dialect toggle
+- [ ] Test suite
 
 ---
 
 ## Why
 
-Writing raw SQL is fine. But understanding how a query language gets parsed, validated, and compiled into executable statements — that's the interesting part. 
-This project is about building the pipeline from scratch: every token, every node, every string concat by hand.
+Writing raw SQL or MongoDB is fine. But understanding how a query language gets **lexed, parsed, and compiled** into executable statements — that's the interesting part.
 
-No libraries. No shortcuts. Just C.
+Every token, every AST node, every string by hand. No libraries. No shortcuts. Just C.
 
 ---
