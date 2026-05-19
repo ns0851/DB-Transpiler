@@ -6,7 +6,7 @@ bool is_num(char a) {
 }
 
 bool is_operator(char a) {
-    return a == '+' || a == '>' || a == '<' ||
+    return a == '>' || a == '<' ||
            a == '=' || a == '!' || a == '|' || a == '&';
 }
 

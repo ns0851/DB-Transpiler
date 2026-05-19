@@ -34,7 +34,7 @@ void print_mongo(TreeNode *node) {
         printf(" ]");
         return;
     }
-
+    
     if(strcmp(node->value, "=") == 0) {
         printf("{ %s: ", node->left->value);
         printf("%s }", node->right->value);
@@ -43,28 +43,28 @@ void print_mongo(TreeNode *node) {
 
     if(strcmp(node->value, ">") == 0) {
         printf("{ %s: { $gt: %s } }",
-               node->left->value,
-               node->right->value);
-        return;
-    }
-
+            node->left->value,
+            node->right->value);
+            return;
+        }
+        
     if(strcmp(node->value, "<") == 0) {
         printf("{ %s: { $lt: %s } }",
-               node->left->value,
-               node->right->value);
-        return;
-    }
+            node->left->value,
+            node->right->value);
+            return;
+        }
     if(strcmp(node->value, ">=") == 0) {
         printf("{ %s: { $gte: %s } }",
-            node->left->value,
-            node->right->value);
+        node->left->value,
+        node->right->value);
         return;
     }
-
-    if(strcmp(node->value, "<=") == 0) {
+        
+        if(strcmp(node->value, "<=") == 0) {
         printf("{ %s: { $lte: %s } }",
-            node->left->value,
-            node->right->value);
+        node->left->value,
+        node->right->value);
         return;
     }
 }
@@ -110,9 +110,7 @@ void generate_mongo() {
     printf("db.%s.find(", query.table_name);
 
     if(query.condition != NULL) {
-        printf("{ ");
         print_mongo(query.condition);
-        printf(" }");
     } else {
         printf("{}");
     }

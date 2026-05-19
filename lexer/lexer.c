@@ -87,7 +87,7 @@ Result get_next(int i, char *str, int len) {
                 break;
             }
             if(isDouble) {
-                count+=2;
+                count+=1;
                 isDouble=false;
             } 
             else count++;
