@@ -140,7 +140,7 @@ TreeNode* parse_subquery() {
         exit(1);
     }
 
-    if(current != NULL && (current->data.type == TOKEN_NUMBER || current->data.type == TOKEN_IDENTIFIER)) {
+    if(current != NULL && (current->data.type == TOKEN_NUMBER || current->data.type == TOKEN_IDENTIFIER || current->data.type == TOKEN_STRING)) {
         rightnode = createNode(current->data.word);
         node->right = rightnode;
 

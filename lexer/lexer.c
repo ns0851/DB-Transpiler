@@ -37,11 +37,6 @@ void categorize(int initial, int final, char *str, TokenType type) {
             }
         }
     }
-
-    if(type == TOKEN_STRING) {
-        ++initial;
-        --length;
-    }
     
     insert_to_symbol_table(initial, length, str, type);
 }

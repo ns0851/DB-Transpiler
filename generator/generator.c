@@ -99,8 +99,8 @@ void generate_sql() {
             printf("%s, ", query.projections[i]);
         }
     }
-    printf("%s ", query.table_name);
     printf("%s ", lookup(convert_to_lower(query.projections[query.projection_count-1]), sql, 5));
+    printf("%s ", query.table_name);
 
     print_tree_sql(query.condition);
 }
